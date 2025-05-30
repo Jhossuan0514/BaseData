@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-export default function HomePage() {
+export default function Dashboard() {
   const router = useRouter();
 
   const goToLogin = () => router.push('/login');
@@ -12,14 +12,18 @@ export default function HomePage() {
   return (
     <main style={styles.main}>
       <section style={styles.card}>
-        <h1 style={styles.title}>Bienvenidos al Formulario <span style={styles.highlight}>Unisalle</span></h1>
-        <p style={styles.subtitle}>Tu plataforma para gestionar registros de manera fácil y segura.</p>
+        <h1 style={styles.title}>
+          Bienvenido al <span style={styles.highlight}> Panel de control</span>
+        </h1>
+        <p style={styles.subtitle}>
+          Funciones principales
+        </p>
         <div style={styles.buttonContainer}>
-          <button onClick={goToLogin} style={{ ...styles.button, ...styles.loginButton }}>
-            Iniciar Sesión
+         <button onClick={goToLogin} style={{ ...styles.button, ...styles.profileButton }}>
+            Apartado de Inicio de secion
           </button>
-          <button onClick={goToSignUp} style={{ ...styles.button, ...styles.signupButton }}>
-            Registrarse
+         <button onClick={goToSignUp} style={{ ...styles.button, ...styles.settingsButton }}>
+            Apartado de Registro
           </button>
         </div>
       </section>
@@ -33,7 +37,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    background: 'linear-gradient(135deg,rgb(6, 17, 61), #15aabf)',
+    background: 'linear-gradient(135deg, rgb(6, 17, 61), #15aabf)',
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     padding: '0 20px',
   },
@@ -74,11 +78,11 @@ const styles: { [key: string]: React.CSSProperties } = {
     cursor: 'pointer',
     transition: 'background-color 0.3s ease, color 0.3s ease',
   },
-  loginButton: {
+  profileButton: {
     backgroundColor: '#4c6ef5',
     color: 'white',
   },
-  signupButton: {
+  settingsButton: {
     backgroundColor: '#15aabf',
     color: 'white',
   },

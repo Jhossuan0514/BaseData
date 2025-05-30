@@ -1,116 +1,242 @@
-"use client"; // Indica que este componente se ejecuta en el cliente (necesario para manejar eventos como onSubmit)
+'use client';
 
-import axios from "axios"; // Importamos axios para realizar peticiones HTTP
-import { FormEvent, useState } from "react"; // Importamos tipos para eventos de formulario y useState para manejar estado
+import axios from 'axios';
+import { FormEvent, useState } from 'react';
+import Link from 'next/link';
 
-// Componente funcional RegisterPage
 function RegisterPage() {
-  // Estado para mostrar un mensaje de éxito al enviar el formulario
-  const [successMessage, setSuccessMessage] = useState("");
+  // Estados del componente
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [loading, setLoading] = useState(false); // Controla el estado de envío
 
-  // Función que se ejecuta cuando el usuario envía el formulario
+  // Maneja el envío del formulario de registro
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault(); // Evita que se recargue la página
+    e.preventDefault();
+    setLoading(true);
+    setSuccessMessage('');
+    setErrorMessage('');
 
-    // Extraemos los datos del formulario con FormData
     const formData = new FormData(e.currentTarget);
 
     try {
-      // Enviamos los datos al backend mediante POST
-      const res = await axios.post("/api/auth/signup", {
-        email: formData.get("email"),
-        password: formData.get("password"),
-        fullname: formData.get("fullname")
+      // Envía los datos al endpoint de registro
+      await axios.post('/api/auth/signup', {
+        email: formData.get('email'),
+        password: formData.get('password'),
+        fullname: formData.get('fullname'),
       });
 
-      // Mostramos la respuesta en consola
-      console.log(res);
-
-      // Mostramos mensaje de éxito
-      setSuccessMessage("¡Formulario enviado correctamente!");
+      // Mensaje de éxito si todo sale bien
+      setSuccessMessage('¡Registro exitoso! Ya puedes iniciar sesión.');
     } catch (error) {
-      // En caso de error, mostramos el error en consola
-      console.log(error);
-
-      // Limpiamos el mensaje de éxito (por si existía previamente)
-      setSuccessMessage("");
+      // Manejo de errores diversos
+      if (error instanceof Error && error.message) {
+        setErrorMessage(error.message);
+      } else if (
+        typeof error === 'object' &&
+        error !== null &&
+        'response' in error
+      ) {
+        const axiosError = error as { response: { data?: { message?: string } } };
+        setErrorMessage(axiosError.response.data?.message || 'Error desconocido.');
+      } else {
+        setErrorMessage('Ocurrió un error al registrar.');
+      }
+    } finally {
+      setLoading(false); // Oculta el estado de carga
     }
   };
 
-  // Retornamos el formulario
   return (
-    // Contenedor principal centrado con fondo gris claro
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <main style={styles.main}>
+      {/* Formulario de registro */}
+      <form onSubmit={handleSubmit} style={styles.card}>
+        <h1 style={styles.title}>
+          Crear cuenta en <span style={styles.highlight}>Unisalle</span>
+        </h1>
+        <p style={styles.subtitle}>Ingresa tus datos para registrarte.</p>
 
-      {/* Formulario estilizado con Tailwind CSS */}
-      <form
-        onSubmit={handleSubmit} // Se ejecuta cuando el usuario envía el formulario
-        className="bg-white p-8 rounded-xl shadow-md w-full max-w-md text-black" // Fondo blanco, texto negro, bordes redondeados y sombra
-      >
-        {/* Título del formulario */}
-        <h1 className="text-2xl font-bold mb-6 text-center">Sign Up</h1>
-
-        {/* Si hay mensaje de éxito, se muestra en verde */}
-        {successMessage && (
-          <div className="mb-4 text-green-600 text-center font-medium">
-            {successMessage}
-          </div>
+        {/* Estado de carga */}
+        {loading && (
+          <div style={styles.info}>Enviando formulario...</div>
         )}
 
-        {/* Campo para el nombre completo */}
-        <div className="mb-4">
-          <label htmlFor="fullname" className="block text-black font-medium mb-2">
-            Full Name
-          </label>
+        {/* Mensaje de éxito */}
+        {successMessage && (
+          <div style={styles.success}>{successMessage}</div>
+        )}
+
+        {/* Mensaje de error */}
+        {errorMessage && (
+          <div style={styles.error}>{errorMessage}</div>
+        )}
+
+        {/* Campo de nombre completo */}
+        <div style={styles.inputGroup}>
+          <label htmlFor="fullname" style={styles.label}>Nombre completo</label>
           <input
             type="text"
             name="fullname"
             id="fullname"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:border-blue-500"
             required
+            style={styles.input}
+            disabled={loading}
           />
         </div>
 
-        {/* Campo para el correo electrónico */}
-        <div className="mb-4">
-          <label htmlFor="email" className="block text-black font-medium mb-2">
-            Email
-          </label>
+        {/* Campo de email */}
+        <div style={styles.inputGroup}>
+          <label htmlFor="email" style={styles.label}>Correo electrónico</label>
           <input
             type="email"
             name="email"
             id="email"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:border-blue-500"
             required
+            style={styles.input}
+            disabled={loading}
           />
         </div>
 
-        {/* Campo para la contraseña */}
-        <div className="mb-6">
-          <label htmlFor="password" className="block text-black font-medium mb-2">
-            Password
-          </label>
+        {/* Campo de contraseña */}
+        <div style={styles.inputGroup}>
+          <label htmlFor="password" style={styles.label}>Contraseña</label>
           <input
             type="password"
             name="password"
             id="password"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:border-blue-500"
             required
+            style={styles.input}
+            disabled={loading}
           />
         </div>
 
-        {/* Botón de envío */}
+        {/* Botón de registro */}
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+          disabled={loading}
+          style={{
+            ...styles.button,
+            backgroundColor: loading ? '#a0aec0' : '#4c6ef5',
+            cursor: loading ? 'not-allowed' : 'pointer',
+          }}
         >
-          Register
+          {loading ? 'Registrando...' : 'Registrarse'}
         </button>
+
+        {/* Enlace a la página de login */}
+        <p style={styles.registerText}>
+          ¿Ya tienes una cuenta?{' '}
+          <Link href="/login" style={styles.link}>
+            Inicia sesión aquí
+          </Link>
+        </p>
       </form>
-    </div>
+    </main>
   );
 }
 
-// Exportamos el componente para usarlo en otras partes de la aplicación
 export default RegisterPage;
 
+// Estilos 
+const styles: { [key: string]: React.CSSProperties } = {
+  main: {
+    height: '100vh',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    background: 'linear-gradient(135deg, rgb(6, 17, 61), #15aabf)',
+    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+    padding: '0 20px',
+  },
+  card: {
+    backgroundColor: 'white',
+    padding: '40px 40px',
+    borderRadius: '12px',
+    boxShadow: '0 12px 30px rgba(0,0,0,0.15)',
+    maxWidth: '420px',
+    width: '100%',
+    textAlign: 'left',
+  },
+  title: {
+    fontSize: '2rem',
+    marginBottom: '10px',
+    color: '#333',
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  highlight: {
+    color: '#4c6ef5',
+  },
+  subtitle: {
+    fontSize: '1rem',
+    color: '#555',
+    marginBottom: '24px',
+    textAlign: 'center',
+  },
+  info: {
+    backgroundColor: '#e0f2ff',
+    color: '#0077cc',
+    padding: '10px',
+    borderRadius: '8px',
+    marginBottom: '16px',
+    textAlign: 'center',
+  },
+  success: {
+    backgroundColor: '#e6ffed',
+    color: '#2e7d32',
+    padding: '10px',
+    borderRadius: '8px',
+    marginBottom: '16px',
+    textAlign: 'center',
+  },
+  error: {
+    backgroundColor: '#ffe5e5',
+    color: '#cc0000',
+    padding: '10px',
+    borderRadius: '8px',
+    marginBottom: '16px',
+    textAlign: 'center',
+  },
+  inputGroup: {
+    marginBottom: '18px',
+  },
+  label: {
+    display: 'block',
+    fontWeight: '600',
+    marginBottom: '6px',
+    color: '#333',
+  },
+  input: {
+    width: '100%',
+    padding: '10px 12px',
+    border: '1px solid #ccc',
+    borderRadius: '8px',
+    fontSize: '1rem',
+    outline: 'none',
+    color: '#333',             
+    backgroundColor: 'white',
+  },
+  button: {
+    width: '100%',
+    padding: '12px',
+    fontSize: '1.1rem',
+    fontWeight: '600',
+    color: 'white',
+    border: 'none',
+    borderRadius: '8px',
+    transition: 'background-color 0.3s ease',
+    marginTop: '10px',
+  },
+  registerText: {
+    marginTop: '16px',
+    textAlign: 'center',
+    fontSize: '0.95rem',
+    color: '#555',
+  },
+  link: {
+    color: '#4c6ef5',
+    textDecoration: 'underline',
+    fontWeight: 500,
+  },
+};
